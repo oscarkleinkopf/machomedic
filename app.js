@@ -799,6 +799,8 @@ willForm.addEventListener('submit', (e) => {
 
   const name = document.getElementById('willName').value;
   const consola = document.getElementById('willConsola').value;
+  const tv = document.getElementById('willTv').value || "Nadie (guardar para el próximo mundo)";
+  const camiseta = document.getElementById('willCamiseta').value || "El Museo de los Sobrevivientes";
   const culpable = document.getElementById('willCulpable').value;
   const words = document.getElementById('willWords').value;
   const tempVal = parseFloat(tempSlider.value);
@@ -808,12 +810,14 @@ willForm.addEventListener('submit', (e) => {
   const formattedDate = today.toLocaleDateString('es-ES', options);
 
   state.will = {
-    name, consola, culpable, words, date: formattedDate
+    name, consola, tv, camiseta, culpable, words, date: formattedDate
   };
 
   // Populate Will Paper
   document.getElementById('dispWillName').textContent = name;
   document.getElementById('dispWillConsola').textContent = consola;
+  document.getElementById('dispWillTv').textContent = tv;
+  document.getElementById('dispWillCamiseta').textContent = camiseta;
   document.getElementById('dispWillCulpable').textContent = culpable;
   document.getElementById('dispWillWords').textContent = words;
   document.getElementById('willDateDisplay').textContent = formattedDate;
@@ -1693,6 +1697,208 @@ btnSelectWishes.forEach(btn => {
       saveState();
     }
   });
+});
+
+// ==========================================================================
+// Phase 4 features - WhatsApp SOS, Partner Mode, Mic Analyzer & ECG Audio
+// ==========================================================================
+
+// --- 1. WhatsApp SOS Sharing ---
+const btnShareWhatsapp = document.getElementById('btnShareWhatsapp');
+btnShareWhatsapp.addEventListener('click', () => {
+  const activeProfile = profiles.find(p => p.id === currentProfileId) || { name: "El Paciente" };
+  const temp = state.temperature ? state.temperature.toFixed(1) : "37.1";
+  const will = state.willToLive;
+  
+  const text = `🚨 *REPORTE MÉDICO CRÍTICO - MACHOMEDIC* 🚨\n\n` +
+    `👤 *Paciente:* ${activeProfile.name}\n` +
+    `🌡️ *Fiebre:* ${temp}°C (Desierto Masculino)\n` +
+    `❤️ *Esperanza de vida:* ${will}%\n` +
+    `💬 *Sydney Sweeney declara:* "El paciente está en el sofá libando su batalla final."\n\n` +
+    `👉 *Se solicitan oraciones y cerveza helada inmediatamente.*`;
+    
+  const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+});
+
+// --- 2. Partner / Wife Mode ---
+const btnTogglePartnerMode = document.getElementById('btnTogglePartnerMode');
+const partnerModal = document.getElementById('partnerModal');
+const btnClosePartnerModal = document.getElementById('btnClosePartnerModal');
+const btnPartnerTrash = document.getElementById('btnPartnerTrash');
+const btnPartnerSoup = document.getElementById('btnPartnerSoup');
+
+btnTogglePartnerMode.addEventListener('click', () => {
+  const temp = state.temperature ? state.temperature.toFixed(1) : "36.5";
+  document.getElementById('partnerClaimedTemp').textContent = `${temp}°C (Dramática)`;
+  partnerModal.classList.add('active');
+  btnTogglePartnerMode.classList.add('active');
+});
+
+btnClosePartnerModal.addEventListener('click', () => {
+  partnerModal.classList.remove('active');
+  btnTogglePartnerMode.classList.remove('active');
+});
+
+btnPartnerTrash.addEventListener('click', () => {
+  partnerModal.classList.remove('active');
+  btnTogglePartnerMode.classList.remove('active');
+  const quote = "Atención moribundo: tu esposa ha ordenado que la basura no se saca sola. Tu parálisis del sofá ha sido oficialmente revocada. ¡A levantarse!";
+  document.getElementById('sydneySpeech').innerHTML = `"${quote}"`;
+  speakText(quote);
+});
+
+btnPartnerSoup.addEventListener('click', () => {
+  partnerModal.classList.remove('active');
+  btnTogglePartnerMode.classList.remove('active');
+  state.willToLive = Math.min(100, state.willToLive + 15);
+  updateSurvivalUI();
+  const quote = "Sopita caliente servida con dosis masiva de amor y cero compasión por tu fiebre imaginaria. Disfruta tu alimento, campeón.";
+  document.getElementById('sydneySpeech').innerHTML = `"${quote}"`;
+  speakText(quote);
+  saveState();
+});
+
+// --- 3. Mic Groan Analyzer (Web Audio API Input) ---
+const btnMicGroan = document.getElementById('btnMicGroan');
+const micModal = document.getElementById('micModal');
+const btnCloseMicModal = document.getElementById('btnCloseMicModal');
+const micResultArea = document.getElementById('micResultArea');
+const micInstructionText = document.getElementById('micInstructionText');
+const micScoreVal = document.getElementById('micScoreVal');
+const micVerdictText = document.getElementById('micVerdictText');
+
+btnMicGroan.addEventListener('click', async () => {
+  micModal.classList.add('active');
+  micResultArea.classList.add('hidden');
+  micInstructionText.textContent = "Escuchando... Emita su quejido o tos más agónica frente al micrófono durante 3 segundos.";
+  
+  const visualizer = document.querySelector('.mic-visualizer');
+  visualizer.classList.add('recording');
+
+  let peakVolume = 0;
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(stream);
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    const checkInterval = setInterval(() => {
+      analyser.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+      const average = sum / dataArray.length;
+      if (average > peakVolume) peakVolume = average;
+    }, 100);
+
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      stream.getTracks().forEach(track => track.stop());
+      visualizer.classList.remove('recording');
+
+      // Calculate score based on mic volume (90 to 100)
+      const score = Math.min(100, Math.max(90, Math.floor(peakVolume * 1.2) + 85));
+      micScoreVal.textContent = `${score}%`;
+      
+      const verdicts = [
+        "Desempeño digno de un Oscar al Mejor Suspiro Masculino.",
+        "Un quejido verdaderamente desgarrador y conmovedor.",
+        "La resonancia vocal de tu tos confirma el colapso absoluto.",
+        "Potencia acústica agónica sublime. Sydney se enjuga una lágrima."
+      ];
+      const verdict = verdicts[Math.floor(Math.random() * verdicts.length)];
+      micVerdictText.textContent = `"${verdict}"`;
+      micResultArea.classList.remove('hidden');
+      micInstructionText.textContent = "Análisis acústico completado con éxito:";
+
+      const quote = `Análisis de micrófono completado. Le doy a tu quejido un ${score}% de dramatismo. ${verdict}`;
+      document.getElementById('sydneySpeech').innerHTML = `"${quote}"`;
+      speakText(quote);
+
+      // Expose drama badge on avatar
+      const scoreNum = document.getElementById('dramaScoreNum');
+      const scoreBadge = document.getElementById('dramaScoreBadge');
+      if (scoreNum && scoreBadge) {
+        scoreNum.textContent = `${score}%`;
+        scoreBadge.classList.remove('hidden');
+        setTimeout(() => scoreBadge.classList.add('hidden'), 4000);
+      }
+
+    }, 3000);
+
+  } catch (err) {
+    visualizer.classList.remove('recording');
+    micInstructionText.textContent = "Micrófono no detectado o permiso denegado. Generando análisis por simulación...";
+    setTimeout(() => {
+      const score = Math.floor(Math.random() * 8) + 93;
+      micScoreVal.textContent = `${score}%`;
+      micVerdictText.textContent = `"Quejido simulado con elegancia teatral."`;
+      micResultArea.classList.remove('hidden');
+      
+      const quote = `Detector activado. Tu dramatismo estimado es de ${score}%. Continúa con tu noble sufrimiento.`;
+      document.getElementById('sydneySpeech').innerHTML = `"${quote}"`;
+      speakText(quote);
+    }, 1000);
+  }
+});
+
+btnCloseMicModal.addEventListener('click', () => {
+  micModal.classList.remove('active');
+});
+
+
+// --- 4. Hospital ECG Audio Synthesizer ---
+const btnToggleECG = document.getElementById('btnToggleECG');
+const ecgStatusLabel = document.getElementById('ecgStatusLabel');
+let ecgInterval = null;
+let ecgActive = false;
+
+function playECGBeep() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.type = 'sine';
+    osc.frequency.value = 900;
+
+    const now = audioCtx.currentTime;
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+    osc.start(now);
+    osc.stop(now + 0.12);
+  } catch(e) {}
+}
+
+btnToggleECG.addEventListener('click', () => {
+  ecgActive = !ecgActive;
+  if (ecgActive) {
+    btnToggleECG.classList.add('active');
+    ecgStatusLabel.textContent = "ON";
+    playECGBeep();
+    
+    // Interval rate depends on state.willToLive
+    const getBpmDelay = () => state.willToLive < 30 ? 600 : 1200;
+    
+    const runEcgLoop = () => {
+      if (!ecgActive) return;
+      playECGBeep();
+      ecgInterval = setTimeout(runEcgLoop, getBpmDelay());
+    };
+    ecgInterval = setTimeout(runEcgLoop, getBpmDelay());
+    
+  } else {
+    btnToggleECG.classList.remove('active');
+    ecgStatusLabel.textContent = "OFF";
+    if (ecgInterval) clearTimeout(ecgInterval);
+  }
 });
 
 // Initialization

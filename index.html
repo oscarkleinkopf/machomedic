@@ -30,6 +30,16 @@
           <h1>MachoMedic</h1>
         </div>
 
+        <!-- Phase 4: Header Toggles (Modo Esposa & ECG Hospital Audio) -->
+        <div class="header-toggles-group" style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn btn-outline-warning btn-sm" id="btnTogglePartnerMode" title="Activar/Desactivar Vista de la Pareja">
+            <i class="fa-solid fa-person-dress"></i> Modo Esposa
+          </button>
+          <button class="btn btn-outline-info btn-sm" id="btnToggleECG" title="Sonido de Terapia Intensiva">
+            <i class="fa-solid fa-heart-circle-bolt"></i> ECG <span id="ecgStatusLabel">OFF</span>
+          </button>
+        </div>
+
         <!-- Phase 3: Profile Selector Dropdown -->
         <div class="profile-selector-container">
           <button class="btn btn-secondary dropdown-toggle" id="btnProfileDropdown">
@@ -99,6 +109,15 @@
               <i class="fa-solid fa-face-tired"></i> Emitir Quejido Agónico
             </button>
             
+            <!-- Phase 4: Mic Groan Detector & WhatsApp SOS -->
+            <button class="btn btn-info btn-block" id="btnMicGroan" style="background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); color: white; border: none; font-weight: 600;">
+              <i class="fa-solid fa-microphone-lines"></i> 🎙️ Medir Suspiro (Micrófono)
+            </button>
+
+            <button class="btn btn-success btn-block" id="btnShareWhatsapp" style="background: #25D366; color: white; border: none; font-weight: 700; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);">
+              <i class="fa-brands fa-whatsapp"></i> Enviar Alerta SOS WhatsApp
+            </button>
+
             <button class="btn btn-warning btn-block" id="btnCallMom">
               <i class="fa-solid fa-phone"></i> Llamar a Mamá (Urgente)
             </button>
@@ -324,6 +343,17 @@
               </div>
             </div>
 
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="willTv">Heredero de la TV 65" 4K:</label>
+                <input type="text" id="willTv" placeholder="Ej. Mi hermano mayor">
+              </div>
+              <div class="form-group col-md-6">
+                <label for="willCamiseta">Camiseta Favorita de Fútbol / Colección:</label>
+                <input type="text" id="willCamiseta" placeholder="Ej. Mi compadre de asados">
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="willCulpable">Culpable Directo de mi Infección:</label>
               <input type="text" id="willCulpable" placeholder="Ej. El aire acondicionado de la oficina / Un cajero estornudador" required>
@@ -352,10 +382,12 @@
                 <p>Yo, el honorable caballero de la cama de enfermo, <strong id="dispWillName">[Nombre]</strong>, encontrándome en estado terminal debido a un despiadado y letal resfriado que me ha llevado a la escandalosa temperatura de <strong id="willTempDisp">37.1°C</strong>, declaro mis últimas voluntades:</p>
                 
                 <ul class="will-demands">
-                  <li><strong>Legado Tecnológico:</strong> Dejo formalmente mi consola/PC gamer a <strong id="dispWillConsola">[Heredero]</strong>, quien sabrá honrar mi récord en la cancha virtual.</li>
-                  <li><strong>El Enjuiciamiento:</strong> Declaro que el culpable directo de mi trágico final es <strong id="dispWillCulpable">[Culpable]</strong>, a quien la historia juzgará por su imprudencia biológica.</li>
+                  <li><strong>Legado Tecnológico:</strong> Dejo mi consola/PC gamer a <strong id="dispWillConsola">[Heredero]</strong>.</li>
+                  <li><strong>Pantalla Principal:</strong> Dejo la TV 65" 4K a <strong id="dispWillTv">[Sin asignar]</strong>.</li>
+                  <li><strong>Reliquia Deportiva:</strong> Dejo mi camiseta sagrada a <strong id="dispWillCamiseta">[Sin asignar]</strong>.</li>
+                  <li><strong>El Enjuiciamiento:</strong> Declaro que el culpable directo de mi trágico final es <strong id="dispWillCulpable">[Culpable]</strong>.</li>
                   <li><strong>Último Mensaje:</strong> "<em><span id="dispWillWords">[Palabras]</span></em>"</li>
-                  <li><strong>Testigo de Agonía:</strong> Sydney Sweeney, quien me consoló con paciencia infinita.</li>
+                  <li><strong>Testigo de Agonía:</strong> Sydney Sweeney.</li>
                 </ul>
 
                 <p class="will-signature-block">
@@ -479,6 +511,69 @@
       </div>
       <div class="modal-buttons" style="margin-top: 15px;">
         <button type="button" class="btn btn-secondary btn-block" id="btnCancelLastWish">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 4: Partner / Wife Mode Panel Modal -->
+  <div class="profile-modal" id="partnerModal">
+    <div class="profile-modal-content glass-panel" style="width: 440px; max-width: 92vw;">
+      <h3 class="modal-title" style="color: #ff3366;"><i class="fa-solid fa-person-dress"></i> Panel de Control de la Enfermera Real (Esposa/Pareja)</h3>
+      <p class="modal-desc">Vista de diagnóstico real sobre el estado de dramatismo del paciente.</p>
+      
+      <div class="partner-metrics" style="margin: 15px 0; background: rgba(0,0,0,0.25); padding: 15px; border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span>Fiebre Real Registrada:</span>
+          <strong id="partnerRealTemp" class="text-success">36.5°C (Perfecto)</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span>Fiebre Afirmada por él:</span>
+          <strong id="partnerClaimedTemp" class="text-danger">39.9°C (Mortal)</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span>Nivel del Exagerómetro:</span>
+          <strong id="partnerExaggerationScore" class="text-warning">99% Máximo</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Peticiones de agua/cobija hoy:</span>
+          <strong id="partnerRequestsCount">14 veces</strong>
+        </div>
+      </div>
+
+      <div class="partner-actions" style="display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn btn-warning btn-block" id="btnPartnerTrash">
+          <i class="fa-solid fa-dumpster"></i> 🚮 Ordenar "Levántate a sacar la basura"
+        </button>
+        <button class="btn btn-primary btn-block" id="btnPartnerSoup">
+          <i class="fa-solid fa-bowl-food"></i> 🥣 Traer Sopita con diagnóstico cariñoso
+        </button>
+        <button class="btn btn-secondary btn-block" id="btnClosePartnerModal">Cerrar Panel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 4: Mic Groan Analyzer Modal -->
+  <div class="profile-modal" id="micModal">
+    <div class="profile-modal-content glass-panel" style="width: 420px; text-align: center;">
+      <h3 class="modal-title" style="color: #00c6ff;"><i class="fa-solid fa-microphone-lines"></i> Detector de Suspiros Terminales</h3>
+      <p class="modal-desc" id="micInstructionText">Emita su quejido o tos más agónica frente al micrófono durante 3 segundos...</p>
+      
+      <div class="mic-visualizer" style="height: 80px; display: flex; align-items: center; justify-content: center; gap: 6px; margin: 20px 0;">
+        <div class="bar bar1" style="width: 8px; height: 20px; background: #00c6ff; border-radius: 4px; transition: height 0.1s;"></div>
+        <div class="bar bar2" style="width: 8px; height: 35px; background: #00c6ff; border-radius: 4px; transition: height 0.1s;"></div>
+        <div class="bar bar3" style="width: 8px; height: 50px; background: #00c6ff; border-radius: 4px; transition: height 0.1s;"></div>
+        <div class="bar bar4" style="width: 8px; height: 35px; background: #00c6ff; border-radius: 4px; transition: height 0.1s;"></div>
+        <div class="bar bar5" style="width: 8px; height: 20px; background: #00c6ff; border-radius: 4px; transition: height 0.1s;"></div>
+      </div>
+
+      <div class="mic-result-area hidden" id="micResultArea" style="margin-bottom: 15px;">
+        <h4 style="margin: 0; color: var(--color-warning);">Calificación de Dramatismo:</h4>
+        <div style="font-size: 2.5rem; font-weight: 800; color: #ff3366;" id="micScoreVal">99%</div>
+        <p id="micVerdictText" style="font-style: italic; font-size: 0.95rem; margin-top: 5px;">"Desempeño digno de un Oscar al Mejor Suspiro Masculino."</p>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn btn-secondary btn-block" id="btnCloseMicModal">Cerrar</button>
       </div>
     </div>
   </div>
