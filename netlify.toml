@@ -1,0 +1,10 @@
+# Netlify configuration file for MachoMedic
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Redirect rules (SPA fallback if we had routes, good practice to keep)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,0 +1,14 @@
+{
+  "name": "machomedic",
+  "version": "1.0.0",
+  "description": "Consola de Supervivencia para el Resfriado Masculino Terminal",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0"
+  }
+}

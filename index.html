@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MachoMedic - Consola de Supervivencia para el Resfriado Masculino</title>
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Favicon Mock -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤒</text></svg>">
+</head>
+<body>
+  <!-- Canvas for Particle Effects -->
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- Phase 2: Siren Overlay for Fever Alarm -->
+  <div class="siren-overlay" id="sirenOverlay"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-top-bar">
+        <div class="header-logo">
+          <i class="fa-solid fa-house-medical-flag logo-icon"></i>
+          <h1>MachoMedic</h1>
+        </div>
+
+        <!-- Phase 3: Profile Selector Dropdown -->
+        <div class="profile-selector-container">
+          <button class="btn btn-secondary dropdown-toggle" id="btnProfileDropdown">
+            <i class="fa-solid fa-user-injured"></i> Paciente: <span id="currentProfileName">Cargando...</span>
+            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+          </button>
+          <div class="profile-dropdown-menu" id="profileDropdownMenu">
+            <div class="profile-list-header">Lista de Moribundos</div>
+            <div class="profile-list" id="profileList">
+              <!-- Dynamically populated profiles -->
+            </div>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item text-primary" id="btnNewProfile">
+              <i class="fa-solid fa-user-plus"></i> Registrar Nuevo Moribundo
+            </button>
+            <button class="dropdown-item text-danger" id="btnKillProfile">
+              <i class="fa-solid fa-skull"></i> Declarar Fallecido
+            </button>
+          </div>
+        </div>
+      </div>
+      <p class="header-subtitle">Monitoreo de emergencia para el resfriado masculino terminal (temperatura > 37.0°C)</p>
+      <div class="notification-banner" id="notifBanner">
+        <span class="banner-text"><i class="fa-solid fa-circle-exclamation"></i> Las notificaciones están desactivadas. Actívalas para que Sydney te recuerde tus dosis de supervivencia.</span>
+        <button class="btn btn-sm btn-outline-light" id="btnEnableNotif">Activar</button>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <!-- Left Column: Sydney Sweeney Nurse Corner -->
+      <aside class="sydney-sidebar">
+        <div class="sydney-card glass-panel">
+          <div class="sydney-header">
+            <span class="badge badge-online"><span class="pulse-dot"></span> Sydney Sweeney - Enfermera de Cabecera</span>
+          </div>
+          
+          <div class="sydney-avatar-wrapper">
+            <img src="assets/sydney_normal.png" alt="Sydney Sweeney Nurse" id="sydneyAvatar" class="sydney-avatar">
+            <div class="vital-overlay" id="vitalOverlay">
+              <span id="overlayText">ESTABLE</span>
+            </div>
+            <!-- Drama Score floating badge -->
+            <div class="drama-score-badge hidden" id="dramaScoreBadge">
+              <span class="score-label">Drama score:</span>
+              <span class="score-number" id="dramaScoreNum">98%</span>
+            </div>
+          </div>
+
+          <div class="sydney-dialogue">
+            <div class="speech-bubble">
+              <p id="sydneySpeech">"Hola, valiente guerrero. Veo que tienes un estornudo de muerte. No temas, estoy aquí para sostener tu mano en estos momentos finales... o ayudarte a tomar una sopita."</p>
+            </div>
+          </div>
+
+          <div class="sydney-actions">
+            <button class="btn btn-primary btn-block" id="btnMimos">
+              <i class="fa-solid fa-heart-pulse"></i> Pedir Mimos Virtuales
+            </button>
+            
+            <!-- Phase 4: Last Wish Button -->
+            <button class="btn btn-warning btn-block" id="btnLastWish" style="background: linear-gradient(135deg, hsl(328, 100%, 65%) 0%, hsl(272, 85%, 60%) 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(255, 105, 180, 0.45);">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Pedir Último Deseo
+            </button>
+            
+            <!-- Phase 2 Emergency Controls -->
+            <button class="btn btn-danger btn-block" id="btnQuejido">
+              <i class="fa-solid fa-face-tired"></i> Emitir Quejido Agónico
+            </button>
+            
+            <button class="btn btn-warning btn-block" id="btnCallMom">
+              <i class="fa-solid fa-phone"></i> Llamar a Mamá (Urgente)
+            </button>
+
+            <div class="audio-controls">
+              <button class="btn btn-icon btn-secondary" id="btnToggleSpeech" title="Activar/Desactivar Voz">
+                <i class="fa-solid fa-volume-high" id="speechIcon"></i>
+              </button>
+              <span class="audio-status-text">Lectura de voz activa</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Column: Dashboard and Interactive Controls -->
+      <main class="main-content">
+        <!-- Survival Progress Card -->
+        <section class="survival-status-card glass-panel" id="survivalCard">
+          <div class="card-header-dramatic">
+            <h2><i class="fa-solid fa-skull-crossbones"></i> Estado Crítico del Paciente</h2>
+            <div class="death-timer-wrapper">
+              <span class="timer-label" id="deathTimerLabel">TIEMPO ESTIMADO DE MUERTE:</span>
+              <span class="timer-countdown" id="deathCountdown">02:45:00</span>
+            </div>
+          </div>
+
+          <div class="survival-meter-container">
+            <div class="meter-info">
+              <span class="meter-label">Esperanza de Vida (Will to Live)</span>
+              <span class="meter-percentage" id="willToLivePercent">100%</span>
+            </div>
+            <div class="meter-bar-outer">
+              <div class="meter-bar-inner" id="willToLiveBar" style="width: 100%;"></div>
+            </div>
+            <p class="status-summary-text" id="statusSummary">
+              <i class="fa-solid fa-check-double text-success"></i> Estado estable por ahora. Has estornudado solo una vez. Hay esperanzas de ver el partido del domingo.
+            </p>
+
+            <!-- Phase 2: Fifa-O-Meter Quick Toggle -->
+            <div class="fifa-meter-wrapper">
+              <div class="fifa-label-group">
+                <i class="fa-solid fa-circle-play fifa-icon-pulse"></i>
+                <span class="fifa-title">Interruptor de Milagro Deportivo (FIFA / Champions)</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="fifaToggle">
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tabs Navigation -->
+        <nav class="tabs-navigation glass-panel">
+          <button class="tab-btn active" data-tab="tab-sintomas">
+            <i class="fa-solid fa-clipboard-list"></i> Registrar Agonía
+          </button>
+          <button class="tab-btn" data-tab="tab-elixires">
+            <i class="fa-solid fa-prescription-bottle-medical"></i> Dosis de Supervivencia
+          </button>
+          <button class="tab-btn" data-tab="tab-testamento">
+            <i class="fa-solid fa-file-signature"></i> Testamento Terminal
+          </button>
+        </nav>
+
+        <!-- Tab 1: Symptom Registry -->
+        <section class="tab-content glass-panel active" id="tab-sintomas">
+          <div class="tab-header">
+            <h3><i class="fa-solid fa-viruses"></i> Bitácora de Dolores Críticos</h3>
+            <p class="tab-subheader">Registra cada dolor sutil para que Sydney pueda lamentarse contigo.</p>
+          </div>
+
+          <form id="symptomForm" class="interactive-form">
+            <div class="form-group">
+              <label for="symptomSelect">Síntoma Devastador:</label>
+              <select id="symptomSelect" required>
+                <option value="estornudo">Estornudo explosivo (Sospecha de colapso pulmonar y pérdida de costilla)</option>
+                <option value="temperatura">Temperatura a 37.1°C (Fiebre del desierto, hipotermia inminente)</option>
+                <option value="garganta">Garganta áspera (Tragar se siente como tragar vidrio molido)</option>
+                <option value="mocos">Mucosidad nasal sutil (Asfixia mecánica inminente, falta de oxígeno)</option>
+                <option value="fatiga">Fatiga existencial (Incapacidad para levantar el control remoto de la TV)</option>
+                <option value="escalofrio">Escalofrío de 1 segundo (Hipotermia grado 4, preparar mantas térmicas)</option>
+                <option value="tos">Tos seca ocasional (Tuberculosis masculina instantánea)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="dramaSlider">Nivel de Sufrimiento Real (Escala Masculina):</label>
+              <div class="slider-container">
+                <input type="range" id="dramaSlider" min="1" max="10" value="8" class="custom-slider">
+                <div class="slider-labels">
+                  <span>1 (Dolor Insoportable)</span>
+                  <span id="sliderValue">8 (Escribiendo mi Epitafio)</span>
+                  <span>10 (Llamen al Papa)</span>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-danger btn-block">
+              <i class="fa-solid fa-triangle-exclamation"></i> Registrar Síntoma Mortal
+            </button>
+          </form>
+
+          <!-- Phase 2: Apocalypse Thermometer Area -->
+          <div class="apocalypse-thermometer-section">
+            <div class="divider-title">
+              <span>Termómetro del Apocalipsis (Sensor de Alarma)</span>
+            </div>
+            
+            <div class="thermometer-layout">
+              <div class="thermometer-gauge-wrapper">
+                <div class="thermometer-glass">
+                  <div class="thermometer-mercury" id="mercuryBar"></div>
+                  <div class="thermometer-bulb"></div>
+                </div>
+              </div>
+              <div class="thermometer-control">
+                <label for="tempSlider">Ajustar Temperatura Registrada:</label>
+                <input type="range" id="tempSlider" min="36.0" max="38.5" step="0.1" value="36.5" class="custom-slider temp-slider-color">
+                <div class="temp-readout">
+                  <span id="tempValue">36.5</span>°C
+                </div>
+                <div class="temp-status-text" id="tempStatus">
+                  Temperatura normal. Eres inmortal... de momento.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="registered-list-wrapper">
+            <h4>Registro Histórico de la Tragedia:</h4>
+            <div class="symptom-history-list" id="symptomList">
+              <div class="empty-state">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <p>No se han registrado dolores mortales hoy. El paciente es sospechosamente fuerte... por ahora.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 2: Elixir & Medication Schedule -->
+        <section class="tab-content glass-panel" id="tab-elixires">
+          <div class="tab-header">
+            <h3><i class="fa-solid fa-flask"></i> Cronograma de Elixires Salvador</h3>
+            <p class="tab-subheader">Administra tus dosis placebo o medicamentos reales para prolongar tu agonía.</p>
+          </div>
+
+          <div class="quick-elixir-grid">
+            <button class="btn btn-outline-primary btn-elixir" data-elixir="Caldo de Pollo Placebo">
+              <span class="elixir-icon">🥣</span>
+              <span class="elixir-name">Caldo de Pollo</span>
+              <span class="elixir-desc">Fórmula ancestral materna</span>
+            </button>
+            <button class="btn btn-outline-primary btn-elixir" data-elixir="Gominola de Vitamina C">
+              <span class="elixir-icon">🍬</span>
+              <span class="elixir-name">Gomina Vitamina C</span>
+              <span class="elixir-desc">Una dosis de pura fe</span>
+            </button>
+            <button class="btn btn-outline-primary btn-elixir" data-elixir="Té con Miel Sagrado">
+              <span class="elixir-icon">☕</span>
+              <span class="elixir-name">Té Milagroso</span>
+              <span class="elixir-desc">Alivio térmico temporal</span>
+            </button>
+            <button class="btn btn-outline-primary btn-elixir" data-elixir="Paracetamol Extremo">
+              <span class="elixir-icon">💊</span>
+              <span class="elixir-name">Paracetamol 1g</span>
+              <span class="elixir-desc">Tratamiento pesado</span>
+            </button>
+          </div>
+
+          <form id="medicationForm" class="interactive-form">
+            <h4 class="form-title-divider">Programar Recordatorio Automático</h4>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="medName">Nombre del Elixir / Remedio:</label>
+                <input type="text" id="medName" placeholder="Ej. Abrazo curativo, Paracetamol, Mimitos" required>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="medInterval">Frecuencia de Toma (Alerta):</label>
+                <select id="medInterval" required>
+                  <option value="10">Cada 10 segundos (Modo Testeo / Crítico)</option>
+                  <option value="30">Cada 30 segundos (Supervivencia acelerada)</option>
+                  <option value="60">Cada 1 minuto (Alerta constante)</option>
+                  <option value="300">Cada 5 minutos</option>
+                  <option value="3600">Cada 1 hora</option>
+                  <option value="14400">Cada 4 horas</option>
+                  <option value="28800">Cada 8 horas</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-success btn-block">
+              <i class="fa-solid fa-bell"></i> Programar Alerta de Supervivencia
+            </button>
+          </form>
+
+          <div class="registered-list-wrapper">
+            <h4>Alertas Activas de Medicamentos:</h4>
+            <div class="medication-active-list" id="medicationList">
+              <div class="empty-state">
+                <i class="fa-solid fa-clock"></i>
+                <p>No hay alertas programadas. El paciente está librando la batalla sin medicación.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 3: Last Will and Testament -->
+        <section class="tab-content glass-panel" id="tab-testamento">
+          <div class="tab-header">
+            <h3><i class="fa-solid fa-scroll"></i> El Último Suspiro: Testamento Express</h3>
+            <p class="tab-subheader">Por si el resfriado de 37.1°C resulta ser fatal. Prepárate con dignidad.</p>
+          </div>
+
+          <form id="willForm" class="interactive-form">
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="willName">Nombre del Caído:</label>
+                <input type="text" id="willName" placeholder="Tu glorioso nombre" required>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="willConsola">Heredero de mi Consola (PS5/Xbox/PC):</label>
+                <input type="text" id="willConsola" placeholder="Ej. Mi mejor amigo (no mi novia, no sabe apreciar el FIFA)" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="willCulpable">Culpable Directo de mi Infección:</label>
+              <input type="text" id="willCulpable" placeholder="Ej. El aire acondicionado de la oficina / Un cajero estornudador" required>
+            </div>
+
+            <div class="form-group">
+              <label for="willWords">Últimas Palabras Dramáticas para la Posteridad:</label>
+              <textarea id="willWords" rows="3" placeholder="Ej. 'Díganle a Sydney que morí como un héroe en el sofá' o 'Borren mi historial de navegación'" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-warning btn-block">
+              <i class="fa-solid fa-feather-pointed"></i> Redactar Testamento Final
+            </button>
+          </form>
+
+          <!-- Generated Will Document -->
+          <div class="will-document-wrapper hidden" id="willDocument">
+            <div class="will-paper">
+              <div class="will-header">
+                <i class="fa-solid fa-scroll paper-seal"></i>
+                <h4>TESTAMENTO SOLEMNE Y ÚLTIMOS DESEOS</h4>
+                <p class="will-date">Fecha de Agonía: <span id="willDateDisplay">11 de Junio, 2026</span></p>
+              </div>
+              
+              <div class="will-body">
+                <p>Yo, el honorable caballero de la cama de enfermo, <strong id="dispWillName">[Nombre]</strong>, encontrándome en estado terminal debido a un despiadado y letal resfriado que me ha llevado a la escandalosa temperatura de <strong id="willTempDisp">37.1°C</strong>, declaro mis últimas voluntades:</p>
+                
+                <ul class="will-demands">
+                  <li><strong>Legado Tecnológico:</strong> Dejo formalmente mi consola/PC gamer a <strong id="dispWillConsola">[Heredero]</strong>, quien sabrá honrar mi récord en la cancha virtual.</li>
+                  <li><strong>El Enjuiciamiento:</strong> Declaro que el culpable directo de mi trágico final es <strong id="dispWillCulpable">[Culpable]</strong>, a quien la historia juzgará por su imprudencia biológica.</li>
+                  <li><strong>Último Mensaje:</strong> "<em><span id="dispWillWords">[Palabras]</span></em>"</li>
+                  <li><strong>Testigo de Agonía:</strong> Sydney Sweeney, quien me consoló con paciencia infinita.</li>
+                </ul>
+
+                <p class="will-signature-block">
+                  Firmado digitalmente con dedos temblorosos y moqueantes:
+                  <span class="will-signature" id="dispWillSignature">[Firma del Guerrero]</span>
+                </p>
+              </div>
+
+              <div class="will-footer">
+                <button class="btn btn-primary" id="btnPrintWill">
+                  <i class="fa-solid fa-print"></i> Imprimir / Guardar Testamento
+                </button>
+                <button class="btn btn-outline-danger" id="btnDestroyWill">
+                  <i class="fa-solid fa-trash-can"></i> Quemar Testamento (Me estoy recuperando)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 2: Tombstone Epitaph Section -->
+          <div class="tombstone-wrapper hidden" id="tombstoneDocument">
+            <div class="divider-title" style="margin: 30px 0 20px 0;">
+              <span>Placa Conmemorativa del Caído</span>
+            </div>
+            <div class="tombstone">
+              <div class="tombstone-cross">✝</div>
+              <div class="tombstone-content">
+                <h4 class="tombstone-header">AQUÍ YACE UN HÉROE</h4>
+                <p class="tombstone-name" id="tombstoneNameDisp">EL SARGENTO CAÍDO</p>
+                <p class="tombstone-dates">2026 - 2026</p>
+                <p class="tombstone-epitaph" id="tombstoneText">
+                  "Fallecido heroicamente en el sofá un martes por la tarde tras estornudar dos veces. Sydney Sweeney hizo todo lo posible."
+                </p>
+                <p class="tombstone-rip">R. I. P.</p>
+              </div>
+            </div>
+            <div class="tombstone-actions">
+              <button class="btn btn-outline-light btn-block" id="btnPrintTombstone">
+                <i class="fa-solid fa-print"></i> Imprimir Placa Memorial
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <footer class="main-footer">
+    <p>&copy; 2026 MachoMedic Inc. - Hecho con amor, drama y humor negro. Ningún hombre fue dañado de gravedad (aunque ellos juraron que sí).</p>
+  </footer>
+
+  <!-- Phase 2: Emergency Mom Call Modal -->
+  <div class="mom-call-modal" id="momCallModal">
+    <div class="mom-call-content glass-panel">
+      <div class="phone-screen">
+        <div class="phone-header">
+          <div class="phone-carrier">MachoMedic Network</div>
+          <div class="phone-icons">
+            <i class="fa-solid fa-signal"></i>
+            <i class="fa-solid fa-wifi"></i>
+            <i class="fa-solid fa-battery-three-quarters"></i>
+          </div>
+        </div>
+        <div class="phone-caller-info">
+          <div class="mom-avatar"><i class="fa-solid fa-face-kiss-wink-heart"></i></div>
+          <h3 class="mom-name">Mamá ❤️</h3>
+          <span class="call-status" id="callStatusText">Llamando...</span>
+        </div>
+        <div class="phone-dialog-log" id="phoneDialogLog">
+          <!-- Conversation bubbles will be appended here -->
+        </div>
+        <div class="phone-actions">
+          <button class="btn-phone-decline" id="btnHangUpMom">
+            <i class="fa-solid fa-phone-slash"></i>
+          </button>
+          <div class="action-label">Colgar llamada</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 3: Register New Patient Modal -->
+  <div class="profile-modal" id="profileModal">
+    <div class="profile-modal-content glass-panel">
+      <h3 class="modal-title"><i class="fa-solid fa-hospital-user"></i> Registrar Nuevo Paciente</h3>
+      <p class="modal-desc">Ingresa el nombre del guerrero que ha sido abatido por el resfriado terminal.</p>
+      <form id="newProfileForm" class="interactive-form">
+        <div class="form-group">
+          <label for="newProfileInputName">Nombre del Paciente:</label>
+          <input type="text" id="newProfileInputName" placeholder="Ej. Carlos, Pedro, Juan" required autocomplete="off">
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="btn btn-secondary" id="btnCancelNewProfile">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Phase 4: Last Wish Selection Modal -->
+  <div class="profile-modal" id="lastWishModal">
+    <div class="profile-modal-content glass-panel" style="width: 400px; max-width: 90vw;">
+      <h3 class="modal-title" style="color: var(--color-primary);"><i class="fa-solid fa-kiss-wink-heart"></i> El Último Deseo del Caído</h3>
+      <p class="modal-desc">Elige qué favor especial te concederá Sydney Sweeney en tus últimos instantes terrestres.</p>
+      <div class="wish-options-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+        <button class="btn btn-secondary btn-block btn-select-wish" data-wish="beso" style="justify-content: flex-start; text-align: left; padding: 12px 16px;">
+          <span>💋 Un beso de despedida en la frente</span>
+        </button>
+        <button class="btn btn-secondary btn-block btn-select-wish" data-wish="ps5" style="justify-content: flex-start; text-align: left; padding: 12px 16px;">
+          <span>🎮 Especificaciones de PS5 Pro al oído</span>
+        </button>
+        <button class="btn btn-secondary btn-block btn-select-wish" data-wish="mirada" style="justify-content: flex-start; text-align: left; padding: 12px 16px;">
+          <span>😒 Mirada de decepción cariñosa</span>
+        </button>
+        <button class="btn btn-secondary btn-block btn-select-wish" data-wish="mano" style="justify-content: flex-start; text-align: left; padding: 12px 16px;">
+          <span>🤝 Sostener tu mano en la agonía</span>
+        </button>
+        <button class="btn btn-secondary btn-block btn-select-wish" data-wish="cuna" style="justify-content: flex-start; text-align: left; padding: 12px 16px;">
+          <span>🎵 Canción de cuna susurrada</span>
+        </button>
+      </div>
+      <div class="modal-buttons" style="margin-top: 15px;">
+        <button type="button" class="btn btn-secondary btn-block" id="btnCancelLastWish">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
