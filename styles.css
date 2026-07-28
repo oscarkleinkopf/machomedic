@@ -1052,6 +1052,14 @@ textarea:focus {
   font-size: 0.75rem;
 }
 
+.footer-credit {
+  margin: 14px auto 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  opacity: 0.9;
+  font-style: italic;
+}
+
 .actions-role-label {
   margin: 14px 0 6px;
   font-size: 0.72rem;
