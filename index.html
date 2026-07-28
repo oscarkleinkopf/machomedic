@@ -32,8 +32,8 @@
 
         <!-- Phase 4: Header Toggles (Modo Esposa & ECG Hospital Audio) -->
         <div class="header-toggles-group" style="display: flex; gap: 8px; align-items: center;">
-          <button class="btn btn-outline-warning btn-sm" id="btnTogglePartnerMode" title="Activar/Desactivar Vista de la Pareja">
-            <i class="fa-solid fa-person-dress"></i> Modo Esposa
+          <button class="btn btn-outline-warning btn-sm" id="btnTogglePartnerMode" title="Panel de la cuidadora: dosis, drama y control remoto emocional">
+            <i class="fa-solid fa-person-dress"></i> Modo Señora
           </button>
           <button class="btn btn-outline-info btn-sm" id="btnToggleECG" title="Sonido de Terapia Intensiva">
             <i class="fa-solid fa-heart-circle-bolt"></i> ECG <span id="ecgStatusLabel">OFF</span>
@@ -61,9 +61,9 @@
           </div>
         </div>
       </div>
-      <p class="header-subtitle">Monitoreo de emergencia para el resfriado masculino terminal (temperatura > 37.0°C)</p>
+      <p class="header-subtitle">Para la Señora que trackea el paracetamol… y para el héroe del sofá que jura que no llega a la cena.</p>
       <div class="notification-banner" id="notifBanner">
-        <span class="banner-text"><i class="fa-solid fa-circle-exclamation"></i> Las notificaciones están desactivadas. Actívalas para que Sydney te recuerde tus dosis de supervivencia.</span>
+        <span class="banner-text"><i class="fa-solid fa-circle-exclamation"></i> Notificaciones off. Actívalas para no volver a preguntar “¿ya te tomaste la pastilla?”.</span>
         <button class="btn btn-sm btn-outline-light" id="btnEnableNotif">Activar</button>
       </div>
     </header>
@@ -90,11 +90,17 @@
 
           <div class="sydney-dialogue">
             <div class="speech-bubble">
-              <p id="sydneySpeech">"Hola, valiente guerrero. Veo que tienes un estornudo de muerte. No temas, estoy aquí para sostener tu mano en estos momentos finales... o ayudarte a tomar una sopita."</p>
+              <p id="sydneySpeech">"Hola, operadora de la consola. Yo dramatizo; tú trackeas el paracetamol. Juntas hacemos que este resfriado sobreviva… digo, que él sobreviva al resfriado."</p>
             </div>
           </div>
 
           <div class="sydney-actions">
+            <p class="actions-role-label">Para la operadora de la consola</p>
+            <button class="btn btn-success btn-block" id="btnShareWhatsapp" style="background: #25D366; color: white; border: none; font-weight: 700; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);">
+              <i class="fa-brands fa-whatsapp"></i> Enviar Alerta SOS WhatsApp
+            </button>
+
+            <p class="actions-role-label">Para el drama king del sofá</p>
             <button class="btn btn-primary btn-block" id="btnMimos">
               <i class="fa-solid fa-heart-pulse"></i> Pedir Mimos Virtuales
             </button>
@@ -109,13 +115,9 @@
               <i class="fa-solid fa-face-tired"></i> Emitir Quejido Agónico
             </button>
             
-            <!-- Phase 4: Mic Groan Detector & WhatsApp SOS -->
+            <!-- Phase 4: Mic Groan Detector -->
             <button class="btn btn-info btn-block" id="btnMicGroan" style="background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); color: white; border: none; font-weight: 600;">
-              <i class="fa-solid fa-microphone-lines"></i> 🎙️ Medir Suspiro (Micrófono)
-            </button>
-
-            <button class="btn btn-success btn-block" id="btnShareWhatsapp" style="background: #25D366; color: white; border: none; font-weight: 700; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);">
-              <i class="fa-brands fa-whatsapp"></i> Enviar Alerta SOS WhatsApp
+              <i class="fa-solid fa-microphone-lines"></i> Medir Suspiro (Micrófono)
             </button>
 
             <button class="btn btn-warning btn-block" id="btnCallMom">
@@ -137,7 +139,7 @@
         <!-- Survival Progress Card -->
         <section class="survival-status-card glass-panel" id="survivalCard">
           <div class="card-header-dramatic">
-            <h2><i class="fa-solid fa-skull-crossbones"></i> Estado Crítico del Paciente</h2>
+            <h2><i class="fa-solid fa-skull-crossbones"></i> Estado del paciente (versión Sofá)</h2>
             <div class="death-timer-wrapper">
               <span class="timer-label" id="deathTimerLabel">TIEMPO ESTIMADO DE MUERTE:</span>
               <span class="timer-countdown" id="deathCountdown">02:45:00</span>
@@ -170,24 +172,96 @@
           </div>
         </section>
 
-        <!-- Tabs Navigation -->
+        <!-- Tabs Navigation: dosis primero (job de la cuidadora) -->
         <nav class="tabs-navigation glass-panel">
-          <button class="tab-btn active" data-tab="tab-sintomas">
-            <i class="fa-solid fa-clipboard-list"></i> Registrar Agonía
+          <button class="tab-btn active" data-tab="tab-elixires">
+            <i class="fa-solid fa-prescription-bottle-medical"></i> Pastillas &amp; Remedios
           </button>
-          <button class="tab-btn" data-tab="tab-elixires">
-            <i class="fa-solid fa-prescription-bottle-medical"></i> Dosis de Supervivencia
+          <button class="tab-btn" data-tab="tab-sintomas">
+            <i class="fa-solid fa-clipboard-list"></i> Bitácora de Agonía
           </button>
           <button class="tab-btn" data-tab="tab-testamento">
             <i class="fa-solid fa-file-signature"></i> Testamento Terminal
           </button>
         </nav>
 
-        <!-- Tab 1: Symptom Registry -->
-        <section class="tab-content glass-panel active" id="tab-sintomas">
+        <!-- Tab 1: Elixir & Medication Schedule (cuidadora-first) -->
+        <section class="tab-content glass-panel active" id="tab-elixires">
+          <div class="tab-header">
+            <h3><i class="fa-solid fa-flask"></i> Consola de Dosis (operada por la Señora)</h3>
+            <p class="tab-subheader">Registra la pastilla, programa la próxima y evita el interrogatorio cada media hora. El drama es gratis; el olvido, no.</p>
+          </div>
+
+          <div class="caregiver-tip glass-inset">
+            <i class="fa-solid fa-heart"></i>
+            <span>Tip de supervivencia doméstica: marca <strong>Tomar</strong> cuando él se trague el paracetamol. Sydney aplaudirá… con ironía.</span>
+          </div>
+
+          <div class="quick-elixir-grid">
+            <button class="btn btn-outline-primary btn-elixir" data-elixir="Caldo de Pollo Placebo">
+              <span class="elixir-icon">🥣</span>
+              <span class="elixir-name">Caldo de Pollo</span>
+              <span class="elixir-desc">Fórmula ancestral materna</span>
+            </button>
+            <button class="btn btn-outline-primary btn-elixir" data-elixir="Gominola de Vitamina C">
+              <span class="elixir-icon">🍬</span>
+              <span class="elixir-name">Gomina Vitamina C</span>
+              <span class="elixir-desc">Una dosis de pura fe</span>
+            </button>
+            <button class="btn btn-outline-primary btn-elixir" data-elixir="Té con Miel Sagrado">
+              <span class="elixir-icon">☕</span>
+              <span class="elixir-name">Té Milagroso</span>
+              <span class="elixir-desc">Alivio térmico temporal</span>
+            </button>
+            <button class="btn btn-outline-primary btn-elixir" data-elixir="Paracetamol Extremo">
+              <span class="elixir-icon">💊</span>
+              <span class="elixir-name">Paracetamol 1g</span>
+              <span class="elixir-desc">El clásico. Sí, otra vez.</span>
+            </button>
+          </div>
+
+          <form id="medicationForm" class="interactive-form">
+            <h4 class="form-title-divider">Programar recordatorio (para no pelear)</h4>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="medName">Remedio / medicamento:</label>
+                <input type="text" id="medName" placeholder="Ej. Paracetamol 500mg, antigripal, miel con limón" required>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="medInterval">¿Cada cuánto te vuelve a preguntar?</label>
+                <select id="medInterval" required>
+                  <option value="10">Cada 10 segundos (Modo test / demos)</option>
+                  <option value="30">Cada 30 segundos (supervivencia acelerada)</option>
+                  <option value="60">Cada 1 minuto</option>
+                  <option value="300">Cada 5 minutos</option>
+                  <option value="3600">Cada 1 hora</option>
+                  <option value="14400">Cada 4 horas</option>
+                  <option value="21600" selected>Cada 6 horas (clásico resfriado)</option>
+                  <option value="28800">Cada 8 horas</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-success btn-block">
+              <i class="fa-solid fa-bell"></i> Programar alerta de pastilla
+            </button>
+          </form>
+
+          <div class="registered-list-wrapper">
+            <h4>Próximas dosis en la consola:</h4>
+            <div class="medication-active-list" id="medicationList">
+              <div class="empty-state">
+                <i class="fa-solid fa-clock"></i>
+                <p>Sin alertas. O es un milagro… o alguien va a olvidar el paracetamol a las 4 a.m.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 2: Symptom Registry -->
+        <section class="tab-content glass-panel" id="tab-sintomas">
           <div class="tab-header">
             <h3><i class="fa-solid fa-viruses"></i> Bitácora de Dolores Críticos</h3>
-            <p class="tab-subheader">Registra cada dolor sutil para que Sydney pueda lamentarse contigo.</p>
+            <p class="tab-subheader">Él registra cada molestia. Tú lees el drama score. Todos ganan (menos el silencio).</p>
           </div>
 
           <form id="symptomForm" class="interactive-form">
@@ -253,72 +327,6 @@
               <div class="empty-state">
                 <i class="fa-solid fa-heart-pulse"></i>
                 <p>No se han registrado dolores mortales hoy. El paciente es sospechosamente fuerte... por ahora.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Tab 2: Elixir & Medication Schedule -->
-        <section class="tab-content glass-panel" id="tab-elixires">
-          <div class="tab-header">
-            <h3><i class="fa-solid fa-flask"></i> Cronograma de Elixires Salvador</h3>
-            <p class="tab-subheader">Administra tus dosis placebo o medicamentos reales para prolongar tu agonía.</p>
-          </div>
-
-          <div class="quick-elixir-grid">
-            <button class="btn btn-outline-primary btn-elixir" data-elixir="Caldo de Pollo Placebo">
-              <span class="elixir-icon">🥣</span>
-              <span class="elixir-name">Caldo de Pollo</span>
-              <span class="elixir-desc">Fórmula ancestral materna</span>
-            </button>
-            <button class="btn btn-outline-primary btn-elixir" data-elixir="Gominola de Vitamina C">
-              <span class="elixir-icon">🍬</span>
-              <span class="elixir-name">Gomina Vitamina C</span>
-              <span class="elixir-desc">Una dosis de pura fe</span>
-            </button>
-            <button class="btn btn-outline-primary btn-elixir" data-elixir="Té con Miel Sagrado">
-              <span class="elixir-icon">☕</span>
-              <span class="elixir-name">Té Milagroso</span>
-              <span class="elixir-desc">Alivio térmico temporal</span>
-            </button>
-            <button class="btn btn-outline-primary btn-elixir" data-elixir="Paracetamol Extremo">
-              <span class="elixir-icon">💊</span>
-              <span class="elixir-name">Paracetamol 1g</span>
-              <span class="elixir-desc">Tratamiento pesado</span>
-            </button>
-          </div>
-
-          <form id="medicationForm" class="interactive-form">
-            <h4 class="form-title-divider">Programar Recordatorio Automático</h4>
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="medName">Nombre del Elixir / Remedio:</label>
-                <input type="text" id="medName" placeholder="Ej. Abrazo curativo, Paracetamol, Mimitos" required>
-              </div>
-              <div class="form-group col-md-6">
-                <label for="medInterval">Frecuencia de Toma (Alerta):</label>
-                <select id="medInterval" required>
-                  <option value="10">Cada 10 segundos (Modo Testeo / Crítico)</option>
-                  <option value="30">Cada 30 segundos (Supervivencia acelerada)</option>
-                  <option value="60">Cada 1 minuto (Alerta constante)</option>
-                  <option value="300">Cada 5 minutos</option>
-                  <option value="3600">Cada 1 hora</option>
-                  <option value="14400">Cada 4 horas</option>
-                  <option value="28800">Cada 8 horas</option>
-                </select>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-success btn-block">
-              <i class="fa-solid fa-bell"></i> Programar Alerta de Supervivencia
-            </button>
-          </form>
-
-          <div class="registered-list-wrapper">
-            <h4>Alertas Activas de Medicamentos:</h4>
-            <div class="medication-active-list" id="medicationList">
-              <div class="empty-state">
-                <i class="fa-solid fa-clock"></i>
-                <p>No hay alertas programadas. El paciente está librando la batalla sin medicación.</p>
               </div>
             </div>
           </div>
@@ -436,7 +444,8 @@
   </div>
 
   <footer class="main-footer">
-    <p>&copy; 2026 MachoMedic Inc. - Hecho con amor, drama y humor negro. Ningún hombre fue dañado de gravedad (aunque ellos juraron que sí).</p>
+    <p>&copy; 2026 MachoMedic Inc. — Hecho con amor, drama y humor negro. Ningún hombre fue dañado de gravedad (aunque ellos juraron que sí).</p>
+    <p class="footer-disclaimer">App de humor y recordatorios domésticos. <strong>No es consejo médico</strong>: respeta el prospecto, las dosis máximas y consulta a un profesional si la cosa se pone seria. Trackea la pastilla; ríete del drama.</p>
   </footer>
 
   <!-- Phase 2: Emergency Mom Call Modal -->
@@ -472,12 +481,12 @@
   <!-- Phase 3: Register New Patient Modal -->
   <div class="profile-modal" id="profileModal">
     <div class="profile-modal-content glass-panel">
-      <h3 class="modal-title"><i class="fa-solid fa-hospital-user"></i> Registrar Nuevo Paciente</h3>
-      <p class="modal-desc">Ingresa el nombre del guerrero que ha sido abatido por el resfriado terminal.</p>
+      <h3 class="modal-title"><i class="fa-solid fa-hospital-user"></i> Registrar Nuevo Moribundo</h3>
+      <p class="modal-desc">Nombre del paciente bajo vigilancia de la Señora (o del círculo de amigos con sentido del humor).</p>
       <form id="newProfileForm" class="interactive-form">
         <div class="form-group">
-          <label for="newProfileInputName">Nombre del Paciente:</label>
-          <input type="text" id="newProfileInputName" placeholder="Ej. Carlos, Pedro, Juan" required autocomplete="off">
+          <label for="newProfileInputName">Nombre del paciente:</label>
+          <input type="text" id="newProfileInputName" placeholder="Ej. Carlitos, El Jefe, Mi Amor Dramático" required autocomplete="off">
         </div>
         <div class="modal-buttons">
           <button type="button" class="btn btn-secondary" id="btnCancelNewProfile">Cancelar</button>
@@ -518,36 +527,42 @@
   <!-- Phase 4: Partner / Wife Mode Panel Modal -->
   <div class="profile-modal" id="partnerModal">
     <div class="profile-modal-content glass-panel" style="width: 440px; max-width: 92vw;">
-      <h3 class="modal-title" style="color: #ff3366;"><i class="fa-solid fa-person-dress"></i> Panel de Control de la Enfermera Real (Esposa/Pareja)</h3>
-      <p class="modal-desc">Vista de diagnóstico real sobre el estado de dramatismo del paciente.</p>
+      <h3 class="modal-title" style="color: #ff3366;"><i class="fa-solid fa-person-dress"></i> Panel de la Señora (operadora real)</h3>
+      <p class="modal-desc">Tú mandas la consola: dosis, drama score y cero paciencia para el ensayo del Oscar.</p>
       
+      <div class="partner-dose-strip" id="partnerDoseStrip">
+        <div class="partner-dose-label"><i class="fa-solid fa-capsules"></i> Próxima pastilla</div>
+        <div class="partner-dose-value" id="partnerNextDose">Sin alertas programadas</div>
+        <div class="partner-dose-meta" id="partnerLastDose">Última toma: —</div>
+      </div>
+
       <div class="partner-metrics" style="margin: 15px 0; background: rgba(0,0,0,0.25); padding: 15px; border-radius: 12px;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-          <span>Fiebre Real Registrada:</span>
-          <strong id="partnerRealTemp" class="text-success">36.5°C (Perfecto)</strong>
+          <span>Temperatura en el termómetro:</span>
+          <strong id="partnerRealTemp" class="text-success">36.5°C</strong>
         </div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-          <span>Fiebre Afirmada por él:</span>
+          <span>Temperatura según él:</span>
           <strong id="partnerClaimedTemp" class="text-danger">39.9°C (Mortal)</strong>
         </div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-          <span>Nivel del Exagerómetro:</span>
+          <span>Exagerómetro:</span>
           <strong id="partnerExaggerationScore" class="text-warning">99% Máximo</strong>
         </div>
         <div style="display: flex; justify-content: space-between;">
-          <span>Peticiones de agua/cobija hoy:</span>
-          <strong id="partnerRequestsCount">14 veces</strong>
+          <span>Quejas registradas hoy:</span>
+          <strong id="partnerRequestsCount">0</strong>
         </div>
       </div>
 
       <div class="partner-actions" style="display: flex; flex-direction: column; gap: 10px;">
         <button class="btn btn-warning btn-block" id="btnPartnerTrash">
-          <i class="fa-solid fa-dumpster"></i> 🚮 Ordenar "Levántate a sacar la basura"
+          <i class="fa-solid fa-dumpster"></i> Ordenar: “Levántate a sacar la basura”
         </button>
         <button class="btn btn-primary btn-block" id="btnPartnerSoup">
-          <i class="fa-solid fa-bowl-food"></i> 🥣 Traer Sopita con diagnóstico cariñoso
+          <i class="fa-solid fa-bowl-food"></i> Traer sopita + diagnóstico cariñoso
         </button>
-        <button class="btn btn-secondary btn-block" id="btnClosePartnerModal">Cerrar Panel</button>
+        <button class="btn btn-secondary btn-block" id="btnClosePartnerModal">Cerrar panel</button>
       </div>
     </div>
   </div>

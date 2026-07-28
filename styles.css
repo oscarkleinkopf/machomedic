@@ -1044,6 +1044,90 @@ textarea:focus {
   border-top: 1px solid rgba(255, 255, 255, 0.03);
 }
 
+.footer-disclaimer {
+  max-width: 640px;
+  margin: 12px auto 0;
+  line-height: 1.45;
+  opacity: 0.85;
+  font-size: 0.75rem;
+}
+
+.actions-role-label {
+  margin: 14px 0 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.actions-role-label:first-child {
+  margin-top: 0;
+}
+
+.caregiver-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  background: rgba(255, 105, 180, 0.08);
+  border: 1px solid rgba(255, 105, 180, 0.25);
+  font-size: 0.9rem;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+.caregiver-tip i {
+  color: var(--color-primary);
+  margin-top: 2px;
+}
+
+.glass-inset {
+  backdrop-filter: blur(6px);
+}
+
+.med-last-taken {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.med-inline-hint {
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.partner-dose-strip {
+  background: linear-gradient(135deg, rgba(37, 211, 102, 0.12), rgba(0, 114, 255, 0.12));
+  border: 1px solid rgba(37, 211, 102, 0.35);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 8px;
+}
+
+.partner-dose-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.partner-dose-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.partner-dose-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 /* ==========================================================================
    Animations System
    ========================================================================== */
