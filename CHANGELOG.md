@@ -53,8 +53,9 @@ La app aún no publica versiones semánticas formales en npm; las “fases” so
 
 ## Unreleased
 
-Ideas candidatas (ver también `docs/CONCEPTO.md`):
+### Added
+- Documentación de producto: README, concepto, aviso médico, guía de contribución y changelog.
 
+### Ideas candidatas (ver también `docs/CONCEPTO.md`)
 - Vista cuidadora centrada en timeline de dosis del día.
 - Plantillas de esquemas de medicación comunes (copy dramático + intervalos claros).
-- README / docs de producto (este paquete documental).
