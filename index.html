@@ -192,9 +192,47 @@
             <p class="tab-subheader">Registra la pastilla, programa la próxima y evita el interrogatorio cada media hora. El drama es gratis; el olvido, no.</p>
           </div>
 
+          <!-- Phase 5: Day dose console -->
+          <div class="day-dose-console" id="dayDoseConsole">
+            <div class="day-dose-header">
+              <div class="day-dose-heading">
+                <h4><i class="fa-solid fa-calendar-day"></i> Hoy · Dosis del sofá</h4>
+                <p class="day-dose-sub" id="dayDoseSummary">Sin esquema aún. Elige una plantilla o programa una alerta.</p>
+              </div>
+              <button type="button" class="btn btn-success btn-mark-taken" id="btnMarkTaken" title="Marca la próxima dosis pendiente como tomada">
+                <i class="fa-solid fa-check-double"></i>
+                <span>Marcar tomada</span>
+              </button>
+            </div>
+            <ol class="day-dose-timeline" id="dayDoseTimeline" aria-live="polite">
+              <li class="day-dose-empty">Aquí verás lo tomado, lo pendiente y lo atrasado. Como un parte clínico… pero con burla.</li>
+            </ol>
+            <div class="dose-templates">
+              <h4 class="form-title-divider">Plantillas de supervivencia doméstica</h4>
+              <p class="tab-subheader dose-templates-hint">Un toque arma el esquema. Tú mandas; él dramatiza.</p>
+              <div class="dose-template-grid" id="doseTemplateGrid">
+                <button type="button" class="btn btn-outline-primary dose-template-btn" data-template="para6">
+                  <span class="elixir-icon">💊</span>
+                  <span class="elixir-name">Paracetamol cada 6 h</span>
+                  <span class="elixir-desc">El clásico del resfriado</span>
+                </button>
+                <button type="button" class="btn btn-outline-primary dose-template-btn" data-template="antiTea">
+                  <span class="elixir-icon">🤒</span>
+                  <span class="elixir-name">Antigripal + té</span>
+                  <span class="elixir-desc">Pastilla seria + consuelo caliente</span>
+                </button>
+                <button type="button" class="btn btn-outline-primary dose-template-btn" data-template="caldoC">
+                  <span class="elixir-icon">🥣</span>
+                  <span class="elixir-name">Caldo + Vitamina C</span>
+                  <span class="elixir-desc">Modo mamá / placebo premium</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div class="caregiver-tip glass-inset">
             <i class="fa-solid fa-heart"></i>
-            <span>Tip de supervivencia doméstica: marca <strong>Tomar</strong> cuando él se trague el paracetamol. Sydney aplaudirá… con ironía.</span>
+            <span>Tip: usa <strong>Marcar tomada</strong> cuando se trague la pastilla. La timeline del día se actualiza sola (con ironía incluida).</span>
           </div>
 
           <div class="quick-elixir-grid">

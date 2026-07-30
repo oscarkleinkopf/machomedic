@@ -7,7 +7,8 @@ let state = {
   willToLive: 100,             // 0 to 100%
   deathTimeLeft: 16200,        // 4.5 hours in seconds
   symptoms: [],                // { id, type, name, drama, time }
-  medications: [],             // { id, name, interval, secondsLeft, active }
+  medications: [],             // { id, name, interval, secondsLeft, lastTakenAt }
+  doseLog: [],                 // { id, medId, name, takenAt } — tomas del día
   will: null,                  // { name, consola, culpable, words, date }
   speechEnabled: true,
   sportsOn: false,             // Phase 2: Fifa-O-Meter
@@ -283,7 +284,8 @@ const DEFAULT_STATE = {
   willToLive: 100,             // 0 to 100%
   deathTimeLeft: 16200,        // 4.5 hours in seconds
   symptoms: [],                // { id, type, name, drama, time }
-  medications: [],             // { id, name, interval, secondsLeft, active }
+  medications: [],             // { id, name, interval, secondsLeft, lastTakenAt }
+  doseLog: [],                 // { id, medId, name, takenAt }
   will: null,                  // { name, consola, culpable, words, date }
   speechEnabled: true,
   sportsOn: false,             // Phase 2: Fifa-O-Meter
@@ -328,12 +330,19 @@ function loadProfilesAndState() {
   if (savedState) {
     try {
       const parsed = JSON.parse(savedState);
-      // Clean active intervals so we don't duplicate timers
-      parsed.medications.forEach(m => {
+      // Restore countdowns from lastTakenAt when possible
+      (parsed.medications || []).forEach(m => {
         m.active = false;
-        m.secondsLeft = m.interval;
+        if (m.lastTakenAt && m.interval) {
+          const elapsed = Math.floor((Date.now() - m.lastTakenAt) / 1000);
+          m.secondsLeft = Math.max(0, m.interval - elapsed);
+        } else if (typeof m.secondsLeft !== 'number') {
+          m.secondsLeft = m.interval;
+        }
       });
       state = { ...DEFAULT_STATE, ...parsed };
+      if (!Array.isArray(state.doseLog)) state.doseLog = [];
+      pruneDoseLog();
     } catch (e) {
       state = { ...DEFAULT_STATE };
     }
@@ -491,6 +500,7 @@ setInterval(() => {
       // Timer triggers!
       if (med.secondsLeft === 0) {
         triggerMedicationAlert(med);
+        renderDayDoseConsole();
       }
     }
   });
@@ -661,7 +671,8 @@ elixirBtns.forEach(btn => {
   });
 });
 
-function takeElixir(name) {
+function takeElixir(name, options = {}) {
+  const { medId = null, skipLog = false } = options;
   // Boost survival percentage
   let heal = 15;
   if (name.includes("Paracetamol")) heal = 25;
@@ -669,6 +680,10 @@ function takeElixir(name) {
   
   state.willToLive = Math.min(100, state.willToLive + heal);
   updateSurvivalUI();
+
+  if (!skipLog) {
+    logDoseTaken(name, medId);
+  }
 
   // Quote bubble
   const quote = SYDNEY_QUOTES.elixir[Math.floor(Math.random() * SYDNEY_QUOTES.elixir.length)];
@@ -679,8 +694,210 @@ function takeElixir(name) {
   const canvasWidthHalf = window.innerWidth / 2;
   const canvasHeightHalf = window.innerHeight / 2;
   spawnParticles(canvasWidthHalf, canvasHeightHalf, 'pill', 25);
+  renderDayDoseConsole();
   saveState();
 }
+
+// --- Phase 5: Day dose console (timeline + templates) ---
+const DOSE_TEMPLATES = {
+  para6: {
+    label: 'Paracetamol cada 6 h',
+    quote: 'Esquema clásico armado: Paracetamol cada 6 horas. La Señora manda; el sofá obedece… a veces.',
+    meds: [{ name: 'Paracetamol 1g', interval: 21600 }]
+  },
+  antiTea: {
+    label: 'Antigripal + té',
+    quote: 'Antigripal cada 8 h y té cada 4 h. Ciencia dudosa, consuelo garantizado.',
+    meds: [
+      { name: 'Antigripal', interval: 28800 },
+      { name: 'Té con miel', interval: 14400 }
+    ]
+  },
+  caldoC: {
+    label: 'Caldo + Vitamina C',
+    quote: 'Caldo cada 4 h y Vitamina C cada 8 h. Modo mamá activado. El drama king ya puede quejarse con estilo.',
+    meds: [
+      { name: 'Caldo de pollo', interval: 14400 },
+      { name: 'Vitamina C', interval: 28800 }
+    ]
+  }
+};
+
+function dayKey(ts = Date.now()) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function pruneDoseLog() {
+  if (!Array.isArray(state.doseLog)) state.doseLog = [];
+  const today = dayKey();
+  state.doseLog = state.doseLog.filter(e => dayKey(e.takenAt) === today);
+}
+
+function logDoseTaken(name, medId = null) {
+  pruneDoseLog();
+  state.doseLog.push({
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    medId,
+    name,
+    takenAt: Date.now()
+  });
+}
+
+function getTodayDoseLog() {
+  pruneDoseLog();
+  return [...state.doseLog].sort((a, b) => a.takenAt - b.takenAt);
+}
+
+function getUrgentMedication() {
+  if (!state.medications.length) return null;
+  const overdue = state.medications.filter(m => m.secondsLeft === 0);
+  if (overdue.length) return overdue[0];
+  return [...state.medications].sort((a, b) => a.secondsLeft - b.secondsLeft)[0];
+}
+
+function buildDayTimelineItems() {
+  const items = [];
+
+  getTodayDoseLog().forEach(entry => {
+    items.push({
+      kind: 'taken',
+      sortKey: entry.takenAt,
+      name: entry.name,
+      timeLabel: formatClockTime(entry.takenAt),
+      detail: 'Tomada (oficialmente tragada)'
+    });
+  });
+
+  state.medications.forEach(m => {
+    if (m.secondsLeft === 0) {
+      items.push({
+        kind: 'overdue',
+        sortKey: Date.now() - 1,
+        name: m.name,
+        medId: m.id,
+        timeLabel: 'AHORA',
+        detail: 'Atrasada — la Señora ya frunció el ceño'
+      });
+    } else {
+      const dueAt = Date.now() + m.secondsLeft * 1000;
+      items.push({
+        kind: 'pending',
+        sortKey: dueAt,
+        name: m.name,
+        medId: m.id,
+        timeLabel: formatClockTime(dueAt),
+        detail: `Pendiente · en ${formatCountdown(m.secondsLeft)}`
+      });
+    }
+  });
+
+  return items.sort((a, b) => {
+    const rank = { overdue: 0, taken: 1, pending: 2 };
+    if (a.kind === 'overdue' && b.kind !== 'overdue') return -1;
+    if (b.kind === 'overdue' && a.kind !== 'overdue') return 1;
+    if (a.kind === 'taken' && b.kind === 'taken') return a.sortKey - b.sortKey;
+    if (a.kind === 'pending' && b.kind === 'pending') return a.sortKey - b.sortKey;
+    if (a.kind === 'taken' && b.kind === 'pending') return -1;
+    if (a.kind === 'pending' && b.kind === 'taken') return 1;
+    return (rank[a.kind] || 9) - (rank[b.kind] || 9);
+  });
+}
+
+function renderDayDoseConsole() {
+  const timeline = document.getElementById('dayDoseTimeline');
+  const summary = document.getElementById('dayDoseSummary');
+  const markBtn = document.getElementById('btnMarkTaken');
+  if (!timeline || !summary) return;
+
+  pruneDoseLog();
+  const takenCount = getTodayDoseLog().length;
+  const overdueCount = state.medications.filter(m => m.secondsLeft === 0).length;
+  const pendingCount = state.medications.filter(m => m.secondsLeft > 0).length;
+  const urgent = getUrgentMedication();
+
+  if (!state.medications.length && !takenCount) {
+    summary.textContent = 'Sin esquema aún. Elige una plantilla o programa una alerta.';
+  } else if (overdueCount) {
+    summary.textContent = `${overdueCount} atrasada(s) · ${takenCount} tomada(s) hoy · ${pendingCount} en camino. Código pastilla.`;
+  } else {
+    summary.textContent = `${takenCount} tomada(s) hoy · ${pendingCount} pendiente(s). El sofá sobrevive… de momento.`;
+  }
+
+  if (markBtn) {
+    markBtn.disabled = !urgent;
+    markBtn.classList.toggle('is-urgent', !!(urgent && urgent.secondsLeft === 0));
+    const label = markBtn.querySelector('span');
+    if (label) {
+      label.textContent = urgent
+        ? (urgent.secondsLeft === 0 ? `Marcar tomada: ${urgent.name}` : `Marcar tomada: ${urgent.name}`)
+        : 'Marcar tomada';
+    }
+  }
+
+  const items = buildDayTimelineItems();
+  if (!items.length) {
+    timeline.innerHTML = `<li class="day-dose-empty">Aquí verás lo tomado, lo pendiente y lo atrasado. Como un parte clínico… pero con burla.</li>`;
+    return;
+  }
+
+  timeline.innerHTML = items.map(item => `
+    <li class="day-dose-item status-${item.kind}">
+      <span class="day-dose-time">${item.timeLabel}</span>
+      <span class="day-dose-body">
+        <strong class="day-dose-name">${item.name}</strong>
+        <span class="day-dose-detail">${item.detail}</span>
+      </span>
+      <span class="day-dose-badge">${item.kind === 'taken' ? 'Tomada' : item.kind === 'overdue' ? 'Atrasada' : 'Pendiente'}</span>
+    </li>
+  `).join('');
+}
+
+function applyDoseTemplate(templateId) {
+  const template = DOSE_TEMPLATES[templateId];
+  if (!template) return;
+
+  let added = 0;
+  template.meds.forEach(spec => {
+    const exists = state.medications.some(m => m.name.toLowerCase() === spec.name.toLowerCase());
+    if (exists) return;
+    state.medications.unshift({
+      id: Date.now() + Math.floor(Math.random() * 1000) + added,
+      name: spec.name,
+      interval: spec.interval,
+      secondsLeft: spec.interval,
+      lastTakenAt: null
+    });
+    added++;
+  });
+
+  renderMedicationList();
+  renderDayDoseConsole();
+  saveState();
+
+  const quote = added
+    ? template.quote
+    : `Ese esquema ya estaba en la consola. La Señora no necesita duplicados; necesita que él se trague la pastilla.`;
+  document.getElementById('sydneySpeech').innerHTML = `"${quote}"`;
+  speakText(quote);
+}
+
+document.getElementById('doseTemplateGrid')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-template]');
+  if (!btn) return;
+  applyDoseTemplate(btn.getAttribute('data-template'));
+});
+
+document.getElementById('btnMarkTaken')?.addEventListener('click', () => {
+  const urgent = getUrgentMedication();
+  if (!urgent) {
+    const quote = 'No hay pastilla que marcar. Primero arma un esquema, heroína de la cocina.';
+    document.getElementById('sydneySpeech').innerHTML = `"${quote}"`;
+    speakText(quote);
+    return;
+  }
+  window.takeMedication(urgent.id);
+});
 
 // Medication Form Submit
 const medicationForm = document.getElementById('medicationForm');
@@ -702,6 +919,7 @@ medicationForm.addEventListener('submit', (e) => {
   document.getElementById('medName').value = ''; // Reset input
   
   renderMedicationList();
+  renderDayDoseConsole();
   saveState();
 
   const quote = `Alerta lista para ${name}. La Señora ya no tiene que preguntar a gritos: cuando suene, tómatelo. Código pastilla activado.`;
@@ -750,10 +968,12 @@ function renderMedicationList() {
         <i class="fa-solid fa-clock"></i>
         <p>Sin alertas. O es un milagro… o alguien va a olvidar el paracetamol a las 4 a.m.</p>
       </div>`;
+    renderDayDoseConsole();
     return;
   }
 
   updateMedicationListUI();
+  renderDayDoseConsole();
 }
 
 function updateMedicationListUI() {
@@ -788,25 +1008,23 @@ function updateMedicationListUI() {
       </div>
     `;
   }).join('');
+  renderDayDoseConsole();
 }
 
 window.takeMedication = function(id) {
-  state.medications = state.medications.map(m => {
-    if (m.id === id) {
-      m.secondsLeft = m.interval;
-      m.lastTakenAt = Date.now();
-      takeElixir(m.name);
-    }
-    return m;
-  });
+  const med = state.medications.find(m => m.id === id);
+  if (!med) return;
+  med.secondsLeft = med.interval;
+  med.lastTakenAt = Date.now();
+  takeElixir(med.name, { medId: med.id });
   updateMedicationListUI();
-  updateSurvivalUI();
-  saveState();
+  renderDayDoseConsole();
 };
 
 window.deleteMedication = function(id) {
   state.medications = state.medications.filter(m => m.id !== id);
   renderMedicationList();
+  renderDayDoseConsole();
   saveState();
 };
 
@@ -1988,6 +2206,7 @@ function init() {
   updateSurvivalUI();
   renderSymptomList();
   renderMedicationList();
+  renderDayDoseConsole();
   renderProfilesDropdown();
 
   // If saved will exists, populate and display it
