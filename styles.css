@@ -1136,6 +1136,207 @@ textarea:focus {
   margin-top: 4px;
 }
 
+/* Phase 5: Day dose console */
+.day-dose-console {
+  margin-bottom: 22px;
+  padding: 18px 18px 16px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.day-dose-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.day-dose-heading h4 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.day-dose-sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  max-width: 420px;
+}
+
+.btn-mark-taken {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 18px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.btn-mark-taken:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-mark-taken.is-urgent {
+  animation: pulse-pink 1.6s infinite;
+  box-shadow: 0 0 0 1px rgba(255, 80, 80, 0.35);
+}
+
+.day-dose-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.day-dose-empty {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.day-dose-item {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid transparent;
+}
+
+.day-dose-item.status-taken {
+  border-left-color: #25d366;
+}
+
+.day-dose-item.status-pending {
+  border-left-color: #4da3ff;
+}
+
+.day-dose-item.status-overdue {
+  border-left-color: var(--color-danger);
+  background: rgba(255, 60, 60, 0.08);
+}
+
+.day-dose-time {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.day-dose-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.day-dose-name {
+  font-size: 0.95rem;
+}
+
+.day-dose-detail {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.day-dose-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+}
+
+.status-taken .day-dose-badge {
+  color: #25d366;
+  background: rgba(37, 211, 102, 0.12);
+}
+
+.status-pending .day-dose-badge {
+  color: #7ec4ff;
+  background: rgba(77, 163, 255, 0.12);
+}
+
+.status-overdue .day-dose-badge {
+  color: #ff8a8a;
+  background: rgba(255, 60, 60, 0.14);
+}
+
+.dose-templates {
+  margin-top: 18px;
+}
+
+.dose-templates-hint {
+  margin: -4px 0 12px;
+}
+
+.dose-template-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dose-template-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 4px;
+  padding: 14px 14px;
+  height: auto;
+  white-space: normal;
+}
+
+.dose-template-btn .elixir-name {
+  font-weight: 700;
+}
+
+.dose-template-btn .elixir-desc {
+  font-size: 0.78rem;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+@media (max-width: 900px) {
+  .day-dose-header {
+    flex-direction: column;
+  }
+
+  .btn-mark-taken {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dose-template-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .day-dose-item {
+    grid-template-columns: 56px 1fr;
+  }
+
+  .day-dose-badge {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
 /* ==========================================================================
    Animations System
    ========================================================================== */
