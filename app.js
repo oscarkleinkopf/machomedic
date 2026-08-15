@@ -45,10 +45,10 @@ const SYDNEY_QUOTES = {
     "¡Eres todo un espartano! Tomaste un té caliente sin quemarte la lengua. Te mereces un trofeo al valor."
   ],
   elixir: [
-    "¡Un milagro de la ciencia! Esa gominola de Vitamina C ha salvado tu alma del abismo. Esperanza de vida aumentada.",
-    "Caldo de pollo ingerido. El elixir ancestral materno ha restaurado tus funciones vitales por los próximos 10 minutos.",
-    "¡Qué valiente! Te tomaste esa pastilla gigante de Paracetamol sin llorar (bueno, solo un poquito). ¡Muy bien, bebé!",
-    "Abrazo sanador aplicado. La ciencia médica no puede explicar cómo sigues vivo, pero aquí estás. ¡Sigue luchando!"
+    "¡Un milagro de la ciencia! Esa gominola de Vitamina C ha salvado tu alma del abismo. Anótalo en la consola, Señora.",
+    "Caldo de pollo ingerido. El elixir ancestral materno restaura funciones vitales… unos diez minutos, máximo. Próxima dosis cuando diga el timer.",
+    "¡Qué valiente! Te tomaste esa pastilla gigante de Paracetamol sin llorar (bueno, solo un poquito). La Señora ya puede dejar de preguntar… hasta la próxima alerta.",
+    "Abrazo sanador aplicado. La ciencia no explica cómo sigues vivo, pero el recordatorio de pastilla sí. ¡Sigue luchando, drama king!"
   ]
 };
 
@@ -367,7 +367,7 @@ btnEnableNotif.addEventListener('click', () => {
     checkNotificationPermission();
     if (permission === "granted") {
       new Notification("MachoMedic Activado", {
-        body: "Sydney Sweeney velará por tu valiosa vida.",
+        body: "La Señora trackea la dosis. Sydney trackea el Oscar al mejor quejido.",
         icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💖</text></svg>"
       });
     }
@@ -409,15 +409,17 @@ function updateSurvivalUI() {
   willPercent.textContent = `${state.willToLive}%`;
   willBar.style.width = `${state.willToLive}%`;
 
+  const nextMedHint = getNextMedicationHint();
+
   if (state.willToLive >= 80) {
     willBar.classList.add('success');
-    statusSummary.innerHTML = `<i class="fa-solid fa-check-double text-success"></i> Estado estable por ahora. Apenas te quejas. Hay esperanzas de ver el partido del domingo.`;
+    statusSummary.innerHTML = `<i class="fa-solid fa-check-double text-success"></i> Estado estable. Apenas se queja; hay esperanzas de ver el partido.${nextMedHint}`;
     avatar.src = "assets/sydney_normal.png";
     overlay.textContent = "ESTABLE";
   } else if (state.willToLive >= 40) {
     willBar.classList.add('warning');
     willPercent.classList.add('warning');
-    statusSummary.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-warning"></i> SÍNTOMAS MODERADOS. El paciente ha comenzado a emitir suspiros profundos y a pedir té cada 5 minutos.`;
+    statusSummary.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-warning"></i> Síntomas moderados: suspiros profundos y té cada 5 minutos.${nextMedHint}`;
     avatar.src = "assets/sydney_normal.png";
     overlay.textContent = "CUIDADO";
     overlay.classList.add('warning');
@@ -425,7 +427,7 @@ function updateSurvivalUI() {
     willBar.classList.add('danger');
     willPercent.classList.add('critical');
     card.classList.add('critical');
-    statusSummary.innerHTML = `<i class="fa-solid fa-skull-crossbones text-danger animate-flash"></i> ¡CÓDIGO ROJO! El paciente afirma que no puede sentir sus pies y ha pedido que llamen a su mamá.`;
+    statusSummary.innerHTML = `<i class="fa-solid fa-skull-crossbones text-danger animate-flash"></i> ¡CÓDIGO ROJO! Pide mamá, cobija y un Oscar.${nextMedHint}`;
     avatar.src = "assets/sydney_concerned.png";
     overlay.textContent = "CRÍTICO";
     overlay.classList.add('critical');
@@ -692,7 +694,8 @@ medicationForm.addEventListener('submit', (e) => {
     id: Date.now(),
     name: name,
     interval: interval,
-    secondsLeft: interval
+    secondsLeft: interval,
+    lastTakenAt: null
   };
 
   state.medications.unshift(newMed);
@@ -701,10 +704,43 @@ medicationForm.addEventListener('submit', (e) => {
   renderMedicationList();
   saveState();
 
-  const quote = `He programado una alerta para tu ${name}. No me dejes sola y tómatelo a tiempo.`;
+  const quote = `Alerta lista para ${name}. La Señora ya no tiene que preguntar a gritos: cuando suene, tómatelo. Código pastilla activado.`;
   document.getElementById('sydneySpeech').innerHTML = `"${quote}"`;
   speakText(quote);
 });
+
+function formatCountdown(seconds) {
+  if (seconds >= 3600) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  }
+  if (seconds >= 60) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}m ${String(s).padStart(2, '0')}s`;
+  }
+  return `${seconds}s`;
+}
+
+function formatClockTime(ts) {
+  if (!ts) return '—';
+  try {
+    return new Date(ts).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '—';
+  }
+}
+
+function getNextMedicationHint() {
+  if (!state.medications || state.medications.length === 0) return '';
+  const overdue = state.medications.find(m => m.secondsLeft === 0);
+  if (overdue) {
+    return ` <span class="med-inline-hint text-danger">· ¡${overdue.name}: tomar ahora!</span>`;
+  }
+  const next = [...state.medications].sort((a, b) => a.secondsLeft - b.secondsLeft)[0];
+  return ` <span class="med-inline-hint">· Próxima: ${next.name} en ${formatCountdown(next.secondsLeft)}</span>`;
+}
 
 function renderMedicationList() {
   const list = document.getElementById('medicationList');
@@ -712,7 +748,7 @@ function renderMedicationList() {
     list.innerHTML = `
       <div class="empty-state">
         <i class="fa-solid fa-clock"></i>
-        <p>No hay alertas programadas. El paciente está librando la batalla sin medicación.</p>
+        <p>Sin alertas. O es un milagro… o alguien va a olvidar el paracetamol a las 4 a.m.</p>
       </div>`;
     return;
   }
@@ -729,13 +765,17 @@ function updateMedicationListUI() {
     const itemClass = isOverdue ? 'med-item alert-pulse border-danger' : 'med-item';
     const timerText = isOverdue 
       ? '<span class="timer-accent text-danger animate-flash">¡TOMAR AHORA!</span>' 
-      : `Siguiente en: <span class="timer-accent">${m.secondsLeft}s</span>`;
+      : `Próxima en: <span class="timer-accent">${formatCountdown(m.secondsLeft)}</span>`;
+    const lastTaken = m.lastTakenAt
+      ? `Última toma: ${formatClockTime(m.lastTakenAt)}`
+      : 'Última toma: aún no registrada';
     
     return `
       <div class="${itemClass}" style="${isOverdue ? 'border-left-color: var(--color-danger); background: rgba(255,0,0,0.05);' : ''}">
         <div class="med-info">
           <span class="med-name"><i class="fa-solid fa-capsules"></i> ${m.name}</span>
           <span class="med-timer"><i class="fa-regular fa-hourglass-half"></i> ${timerText}</span>
+          <span class="med-last-taken">${lastTaken}</span>
         </div>
         <div class="med-actions">
           <button class="btn btn-sm btn-success" onclick="takeMedication(${m.id})">
@@ -753,14 +793,14 @@ function updateMedicationListUI() {
 window.takeMedication = function(id) {
   state.medications = state.medications.map(m => {
     if (m.id === id) {
-      // Reset timer countdown
       m.secondsLeft = m.interval;
-      // Heal the patient
+      m.lastTakenAt = Date.now();
       takeElixir(m.name);
     }
     return m;
   });
   updateMedicationListUI();
+  updateSurvivalUI();
   saveState();
 };
 
@@ -776,14 +816,14 @@ function triggerMedicationAlert(med) {
   playBeepAlarm();
 
   // Visual alert inside speech bubble
-  const warningText = `¡Emergencia! Es hora de tu dosis de ${med.name}. No te me mueras en el sofá, por favor.`;
+  const warningText = `¡Pastilla! Es hora de ${med.name}. Código rojo doméstico: tómatelo antes de que la Señora vuelva a preguntar.`;
   document.getElementById('sydneySpeech').innerHTML = `"${warningText}"`;
   speakText(warningText);
 
   // Spawning browser notification
   if (Notification.permission === "granted") {
-    new Notification("🚨 ALERTA MACHOMEDIC 🚨", {
-      body: `¡Es hora de tomar tu ${med.name}! Sydney Sweeney te exige sobrevivir.`,
+    new Notification("🚨 MACHOMEDIC — hora de la pastilla", {
+      body: `Toca ${med.name}. Marca “Tomar” en la consola y sigue con tu agonía con dignidad.`,
       icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚨</text></svg>"
     });
   }
@@ -1709,13 +1749,22 @@ btnShareWhatsapp.addEventListener('click', () => {
   const activeProfile = profiles.find(p => p.id === currentProfileId) || { name: "El Paciente" };
   const temp = state.temperature ? state.temperature.toFixed(1) : "37.1";
   const will = state.willToLive;
+  const next = state.medications.length
+    ? [...state.medications].sort((a, b) => a.secondsLeft - b.secondsLeft)[0]
+    : null;
+  const doseLine = next
+    ? (next.secondsLeft === 0
+      ? `💊 *Pastilla pendiente:* ${next.name} ¡AHORA!\n`
+      : `💊 *Próxima dosis:* ${next.name} en ${formatCountdown(next.secondsLeft)}\n`)
+    : `💊 *Pastillas:* sin alertas (la Señora está en modo fe)\n`;
   
   const text = `🚨 *REPORTE MÉDICO CRÍTICO - MACHOMEDIC* 🚨\n\n` +
     `👤 *Paciente:* ${activeProfile.name}\n` +
-    `🌡️ *Fiebre:* ${temp}°C (Desierto Masculino)\n` +
+    `🌡️ *Fiebre (según él):* ${temp}°C\n` +
     `❤️ *Esperanza de vida:* ${will}%\n` +
-    `💬 *Sydney Sweeney declara:* "El paciente está en el sofá libando su batalla final."\n\n` +
-    `👉 *Se solicitan oraciones y cerveza helada inmediatamente.*`;
+    doseLine +
+    `💬 *Sydney declara:* "La Señora opera la consola. Él opera el drama."\n\n` +
+    `👉 *Se solicitan oraciones, cobija y cero juicios… o muchos.*`;
     
   const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
@@ -1728,9 +1777,36 @@ const btnClosePartnerModal = document.getElementById('btnClosePartnerModal');
 const btnPartnerTrash = document.getElementById('btnPartnerTrash');
 const btnPartnerSoup = document.getElementById('btnPartnerSoup');
 
+function refreshPartnerPanel() {
+  const temp = state.temperature != null ? Number(state.temperature) : 36.5;
+  const claimedBump = Math.min(2.4, 0.4 + (state.symptoms.length * 0.15) + ((100 - state.willToLive) / 100));
+  const claimed = (temp + claimedBump).toFixed(1);
+  const exaggeration = Math.min(99, Math.round(40 + state.symptoms.length * 8 + (100 - state.willToLive) * 0.4));
+
+  document.getElementById('partnerRealTemp').textContent = `${temp.toFixed(1)}°C`;
+  document.getElementById('partnerClaimedTemp').textContent = `${claimed}°C (Dramática)`;
+  document.getElementById('partnerExaggerationScore').textContent = `${exaggeration}%`;
+  document.getElementById('partnerRequestsCount').textContent = `${state.symptoms.length}`;
+
+  const nextDoseEl = document.getElementById('partnerNextDose');
+  const lastDoseEl = document.getElementById('partnerLastDose');
+  if (state.medications.length === 0) {
+    nextDoseEl.textContent = 'Sin alertas programadas';
+    lastDoseEl.textContent = 'Última toma: —';
+  } else {
+    const next = [...state.medications].sort((a, b) => a.secondsLeft - b.secondsLeft)[0];
+    nextDoseEl.textContent = next.secondsLeft === 0
+      ? `${next.name} — ¡TOMAR AHORA!`
+      : `${next.name} en ${formatCountdown(next.secondsLeft)}`;
+    const withLast = state.medications.filter(m => m.lastTakenAt).sort((a, b) => b.lastTakenAt - a.lastTakenAt)[0];
+    lastDoseEl.textContent = withLast
+      ? `Última toma: ${withLast.name} a las ${formatClockTime(withLast.lastTakenAt)}`
+      : 'Última toma: aún no registrada';
+  }
+}
+
 btnTogglePartnerMode.addEventListener('click', () => {
-  const temp = state.temperature ? state.temperature.toFixed(1) : "36.5";
-  document.getElementById('partnerClaimedTemp').textContent = `${temp}°C (Dramática)`;
+  refreshPartnerPanel();
   partnerModal.classList.add('active');
   btnTogglePartnerMode.classList.add('active');
 });
@@ -1743,7 +1819,7 @@ btnClosePartnerModal.addEventListener('click', () => {
 btnPartnerTrash.addEventListener('click', () => {
   partnerModal.classList.remove('active');
   btnTogglePartnerMode.classList.remove('active');
-  const quote = "Atención moribundo: tu esposa ha ordenado que la basura no se saca sola. Tu parálisis del sofá ha sido oficialmente revocada. ¡A levantarse!";
+  const quote = "Atención drama king: la Señora revoca tu parálisis de sofá. La basura no se saca sola. ¡Arriba, campeón!";
   document.getElementById('sydneySpeech').innerHTML = `"${quote}"`;
   speakText(quote);
 });
@@ -1753,7 +1829,7 @@ btnPartnerSoup.addEventListener('click', () => {
   btnTogglePartnerMode.classList.remove('active');
   state.willToLive = Math.min(100, state.willToLive + 15);
   updateSurvivalUI();
-  const quote = "Sopita caliente servida con dosis masiva de amor y cero compasión por tu fiebre imaginaria. Disfruta tu alimento, campeón.";
+  const quote = "Sopita servida con amor y cero compasión por tu fiebre de novela. Disfruta, y no olvides la pastilla cuando suene la alerta.";
   document.getElementById('sydneySpeech').innerHTML = `"${quote}"`;
   speakText(quote);
   saveState();
