@@ -8,6 +8,8 @@ La idea no es reemplazar al médico. Es hacer **más lúdico** el cuidado y la r
 
 > *“¿37.1 °C? Código rojo. Traigan sopa, mantas y oraciones. La PS5 ya está en el testamento.”*
 
+**En vivo:** [oscarkleinkopf.github.io/machomedic](https://oscarkleinkopf.github.io/machomedic/)
+
 ---
 
 ## ¿Para quién es?
@@ -87,6 +89,11 @@ npm run preview
 ```
 
 La salida queda en `dist/` (lo que publica Netlify).
+
+### Deploy
+
+- **GitHub Pages** (activo): push a `main` publica https://oscarkleinkopf.github.io/machomedic/
+- **Netlify**: configura los secrets `NETLIFY_AUTH_TOKEN` y `NETLIFY_SITE_ID` en el repo. El workflow `.github/workflows/deploy-netlify.yml` hace `npm run build` y `netlify deploy --prod`.
 
 ---
 
