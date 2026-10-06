@@ -2,6 +2,7 @@
   "name": "machomedic",
   "version": "1.0.0",
   "description": "Consola de Supervivencia para el Resfriado Masculino Terminal",
+  "license": "MIT",
   "main": "index.html",
   "scripts": {
     "dev": "vite",

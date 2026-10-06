@@ -126,6 +126,8 @@ Ideas, bugs y pull requests bienvenidos — siempre que respeten el tono (humor 
 
 ## Licencia / espíritu
 
+Código bajo licencia [MIT](LICENSE). Copyright (c) 2026 Osias Kleinkopf.
+
 Hecho con amor, drama y humor negro. Ningún hombre fue dañado de gravedad (aunque ellos juraron que sí).
 
 **MachoMedic Inc.** — *Monitoreo de emergencia para el resfriado masculino terminal.*
